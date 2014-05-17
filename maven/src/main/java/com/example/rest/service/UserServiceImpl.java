@@ -22,9 +22,6 @@ public class UserServiceImpl implements UserService {
 			dto=(UserDTO) userDtos.get(0);
 			return dto;
 		}
-		dto=new UserDTO();
-		dto.setName("Harcoded username");
-		dto.setAuthToken(authToken);
 		return dto;
 	}
 }

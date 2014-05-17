@@ -30,7 +30,7 @@
 		</property>
 		<property name="serializationInclusion">
 			<util:constant
-				static-field="org.codehaus.jackson.map.annotate. JsonSerialize.Inclusion.NON_NULL" />
+				static-field="org.codehaus.jackson.map.annotate.JsonSerialize.Inclusion.NON_NULL" />
 		</property>
 	</bean>
 
