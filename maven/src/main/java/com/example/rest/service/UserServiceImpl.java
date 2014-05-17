@@ -3,7 +3,6 @@ package com.example.rest.service;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-
 import com.example.rest.dao.UserDao;
 import com.example.rest.dto.UserDTO;
 
@@ -17,11 +16,15 @@ public class UserServiceImpl implements UserService {
 	}
 
 	public UserDTO getUserByAuthToken(String authToken){
+		UserDTO dto=null;
 		List<UserDTO> userDtos = userDao.getUserByAuthToken(authToken);
 		if(!userDtos.isEmpty()){
-			UserDTO dto=(UserDTO) userDtos.get(0);
+			dto=(UserDTO) userDtos.get(0);
 			return dto;
 		}
-		return new UserDTO();
+		dto=new UserDTO();
+		dto.setName("Harcoded username");
+		dto.setAuthToken(authToken);
+		return dto;
 	}
 }
