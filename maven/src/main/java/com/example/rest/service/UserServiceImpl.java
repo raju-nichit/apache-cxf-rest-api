@@ -22,6 +22,6 @@ public class UserServiceImpl implements UserService {
 			UserDTO dto=(UserDTO) userDtos.get(0);
 			return dto;
 		}
-		return null;
+		return new UserDTO();
 	}
 }
