@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:util="http://www.springframework.org/schema/util" xmlns:jaxrs="http://cxf.apache.org/jaxrs"
+	xmlns:cxf="http://cxf.apache.org/core"
+	xsi:schemaLocation="
+	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+	http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd
+	http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd
+	http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd
+	http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd
+	http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd">
+
+	<context:annotation-config />
+	<context:component-scan base-package="com.example.rest" />
+
+	<import resource="classpath:META-INF/cxf/cxf.xml" />
+	<import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
+	<import resource="springDatabase.xml" />
+	<tx:annotation-driven />
+
+	<!-- Jax-rs provider -->
+	<bean id="jacksonMapper" class="org.codehaus.jackson.map.ObjectMapper">
+		<property name="serializationConfig.dateFormat">
+			<bean class="java.text.SimpleDateFormat">
+				<constructor-arg value="yyyy-MM-dd'T'HH:mm:ss.SZ" />
+			</bean>
+		</property>
+		<property name="serializationInclusion">
+			<util:constant
+				static-field="org.codehaus.jackson.map.annotate.JsonSerialize.Inclusion.NON_NULL" />
+		</property>
+	</bean>
+
+	<bean id="jsonProvider" class="org.codehaus.jackson.jaxrs.JacksonJsonProvider">
+		<constructor-arg ref="jacksonMapper" />
+	</bean>
+
+	<!-- dozer mapping -->
+	<bean id="dozerMapper" class="org.dozer.DozerBeanMapper">
+		<property name="mappingFiles">
+			<list>
+				<value>dozer-mapping.xml</value>
+			</list>
+		</property>
+	</bean>
+
+	<bean id="messageSource"
+		class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
+		<property name="basenames">
+			<list>
+				<value>classpath:message</value>
+			</list>
+		</property>
+	</bean>
+
+	<bean
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+				<value>classpath:application.properties</value>
+			</list>
+		</property>
+		<property name="ignoreUnresolvablePlaceholders" value="true" />
+	</bean>
+	<!-- Jax-rs Inerceptor -->
+	<cxf:bus>
+		<cxf:inInterceptors>
+			<ref bean="tokenAuthorizationInterceptor" />
+			<ref bean="loggingInInterceptor" />
+		</cxf:inInterceptors>
+		<cxf:outInterceptors>
+			<ref bean="logOutInterceptor" />
+		</cxf:outInterceptors>
+		<cxf:outFaultInterceptors>
+			<bean class="com.example.rest.interceptor.CustomOutFaultInterceptor"></bean>
+		</cxf:outFaultInterceptors>
+		<cxf:properties>
+			<entry key="javax.ws.rs.ext.ExceptionMapper" value-ref="customExceptionMapper" />
+		</cxf:properties>
+	</cxf:bus>
+
+	<!-- Jax-rs services -->
+	<jaxrs:server address="/service">
+		<jaxrs:serviceBeans>
+			<ref bean="userWebService" />
+		</jaxrs:serviceBeans>
+		<jaxrs:providers>
+			<ref bean="jsonProvider"></ref>
+		</jaxrs:providers>
+		<jaxrs:extensionMappings>
+			<entry key="json" value="application/json" />
+			<entry key="xml" value="application/xml" />
+		</jaxrs:extensionMappings>
+	</jaxrs:server>
+
+	<!-- web service beans -->
+	<bean class="com.example.rest.webservice.UserWebServiceImpl" id="userWebService"></bean>
+
+	<!-- Interceptor beans -->
+	<bean class="com.example.rest.interceptor.TokenAuthorizationInterceptor"
+		id="tokenAuthorizationInterceptor" />
+	<bean class="org.apache.cxf.interceptor.LoggingInInterceptor" id="loggingInInterceptor" />
+	<bean class="org.apache.cxf.interceptor.LoggingOutInterceptor" id="logOutInterceptor" />
+
+	<!-- Exception mapper beans -->
+	<bean class="com.example.rest.mapper.CustomExceptionMapper" id="customExceptionMapper" />
+
+	<!-- service beans -->
+	<bean class="com.example.rest.service.UserServiceImpl" id="userService"></bean>
+
+	<!-- Dao beans -->
+	<bean class="com.example.rest.dao.UserDaoImpl" id="userDao"></bean>
+</beans>
